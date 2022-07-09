@@ -6,4 +6,6 @@ import type { Comment } from "@babel/types"
 export const hasIgnoreNextNode = (
   comments: readonly Comment[] | null | undefined
 ) =>
-  (comments ?? []).some((comment) => comment.value.trim() === "prettier-ignore")
+  (comments ?? []).some(
+    (comment) => comment.value.trim() === "prettier-sort-ignore"
+  )
