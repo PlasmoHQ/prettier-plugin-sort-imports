@@ -1,31 +1,34 @@
 import {
-    CommentBlock,
-    CommentLine,
-    Directive,
-    ImportDeclaration,
-    InterpreterDirective,
-    Statement,
-} from '@babel/types';
+  CommentBlock,
+  CommentLine,
+  Directive,
+  ImportDeclaration,
+  InterpreterDirective,
+  Statement
+} from "@babel/types"
 
 /** A range between a start position (inclusive) and an end position (exclusive). */
-type Range = readonly [start: number, end: number];
+type Range = readonly [start: number, end: number]
 
 /** An optional range between a start position (inclusive) and an end position (exclusive). */
-type OptionalRange = readonly [start: number | null, end: number | null];
+type OptionalRange = readonly [
+  start: number | null | undefined,
+  end: number | null | undefined
+]
 
 /** Compares two range by their start position. */
 function compareRangesByStart(range1: Range, range2: Range): number {
-    return range1[0] < range2[0] ? -1 : range1[0] > range2[0] ? 1 : 0;
+  return range1[0] < range2[0] ? -1 : range1[0] > range2[0] ? 1 : 0
 }
 
 /** Type predicate that checks whether a range has a defined start and end. */
 function hasRange(range: OptionalRange): range is Range {
-    return (
-        range[0] !== null &&
-        range[1] !== null &&
-        Number.isSafeInteger(range[0]) &&
-        Number.isSafeInteger(range[1])
-    );
+  return (
+    range[0] !== null &&
+    range[1] !== null &&
+    Number.isSafeInteger(range[0]) &&
+    Number.isSafeInteger(range[1])
+  )
 }
 
 /**
@@ -35,7 +38,7 @@ function hasRange(range: OptionalRange): range is Range {
  * a single point, i.e. `[2, 5)` and `[4, 8)` are considered overlapping.
  */
 function hasOverlap(range1: Range, range2: Range): boolean {
-    return range1[1] > range2[0] && range2[1] > range1[0];
+  return range1[1] > range2[0] && range2[1] > range1[0]
 }
 
 /**
@@ -46,7 +49,7 @@ function hasOverlap(range1: Range, range2: Range): boolean {
  * @returns A single range representing the union of both ranges.
  */
 function mergeOverlappingRanges(range1: Range, range2: Range): Range {
-    return [Math.min(range1[0], range2[0]), Math.max(range1[1], range2[1])];
+  return [Math.min(range1[0], range2[0]), Math.max(range1[1], range2[1])]
 }
 
 /**
@@ -59,25 +62,22 @@ function mergeOverlappingRanges(range1: Range, range2: Range): Range {
  * position.
  */
 function mergeRanges(ranges: Range[]): Range[] {
-    // Start with a result list initialized to the empty list
-    // Iterate over all given ranges. If a range overlaps the last item in
-    // the result list, replace the last item with the merger between that item
-    // and the range. Otherwise, just add the item to the result list.
-    // For comparison, see also
-    // https://www.geeksforgeeks.org/merging-intervals/
-    const merged: Range[] = [];
-    for (const range of ranges) {
-        const currRange = merged[merged.length - 1];
-        if (currRange !== undefined && hasOverlap(currRange, range)) {
-            merged[merged.length - 1] = mergeOverlappingRanges(
-                currRange,
-                range,
-            );
-        } else {
-            merged.push(range);
-        }
+  // Start with a result list initialized to the empty list
+  // Iterate over all given ranges. If a range overlaps the last item in
+  // the result list, replace the last item with the merger between that item
+  // and the range. Otherwise, just add the item to the result list.
+  // For comparison, see also
+  // https://www.geeksforgeeks.org/merging-intervals/
+  const merged: Range[] = []
+  for (const range of ranges) {
+    const currRange = merged[merged.length - 1]
+    if (currRange !== undefined && hasOverlap(currRange, range)) {
+      merged[merged.length - 1] = mergeOverlappingRanges(currRange, range)
+    } else {
+      merged.push(range)
     }
-    return merged;
+  }
+  return merged
 }
 
 /**
@@ -103,54 +103,54 @@ function mergeRanges(ranges: Range[]): Range[] {
  * respect to the enclosing range.
  */
 function invertRanges(ranges: Range[], totalLength: number): Range[] {
-    // We'd run into out-of-bounds checks if we performed the rest of the
-    // algorithm with an empty array, and would have to insert additional
-    // checks. So just return immediately to keep the code simpler.
-    if (ranges.length === 0) {
-        return ranges;
+  // We'd run into out-of-bounds checks if we performed the rest of the
+  // algorithm with an empty array, and would have to insert additional
+  // checks. So just return immediately to keep the code simpler.
+  if (ranges.length === 0) {
+    return ranges
+  }
+
+  const resultRanges: Range[] = []
+  const isValidRange = (start: number, end: number) => end > start
+
+  // Add the part from the start of the enclosing range to the start of the
+  // first range to exclude.
+  //
+  // |-----------xxxxx-----xxxx-----xxxx-----------|
+  //  ^---------^
+  //  This part
+  const firstRange = ranges[0]
+  if (isValidRange(0, firstRange[0])) {
+    resultRanges.push([0, firstRange[0]])
+  }
+
+  // Iterate over the parts between the ranges to remove and add those parts.
+  //
+  // |----------xxxxx-----xxxx------xxxx-----------|
+  //                 ^---^    ^----^
+  //                   These parts
+  for (let index = 0; index < ranges.length - 1; index += 1) {
+    const prevRange = ranges[index]
+    const nextRange = ranges[index + 1]
+    const start = prevRange[1]
+    const end = nextRange[0]
+    if (isValidRange(start, end)) {
+      resultRanges.push([start, end])
     }
+  }
 
-    const resultRanges: Range[] = [];
-    const isValidRange = (start: number, end: number) => end > start;
+  // Add the part from the end of the last range to exclude to the end of the
+  // enclosing range.
+  //
+  // |----------xxxxx-----xxxx-----xxxx------------|
+  //                                   ^----------^
+  //                                    This part
+  const lastRange = ranges[ranges.length - 1]
+  if (isValidRange(lastRange[1], totalLength)) {
+    resultRanges.push([lastRange[1], totalLength])
+  }
 
-    // Add the part from the start of the enclosing range to the start of the
-    // first range to exclude.
-    //
-    // |-----------xxxxx-----xxxx-----xxxx-----------|
-    //  ^---------^
-    //  This part
-    const firstRange = ranges[0];
-    if (isValidRange(0, firstRange[0])) {
-        resultRanges.push([0, firstRange[0]]);
-    }
-
-    // Iterate over the parts between the ranges to remove and add those parts.
-    //
-    // |----------xxxxx-----xxxx------xxxx-----------|
-    //                 ^---^    ^----^
-    //                   These parts
-    for (let index = 0; index < ranges.length - 1; index += 1) {
-        const prevRange = ranges[index];
-        const nextRange = ranges[index + 1];
-        const start = prevRange[1];
-        const end = nextRange[0];
-        if (isValidRange(start, end)) {
-            resultRanges.push([start, end]);
-        }
-    }
-
-    // Add the part from the end of the last range to exclude to the end of the
-    // enclosing range.
-    //
-    // |----------xxxxx-----xxxx-----xxxx------------|
-    //                                   ^----------^
-    //                                    This part
-    const lastRange = ranges[ranges.length - 1];
-    if (isValidRange(lastRange[1], totalLength)) {
-        resultRanges.push([lastRange[1], totalLength]);
-    }
-
-    return resultRanges;
+  return resultRanges
 }
 
 /**
@@ -162,34 +162,34 @@ function invertRanges(ranges: Range[], totalLength: number): Range[] {
  * one of the given nodes.
  */
 export const removeNodesFromOriginalCode = (
-    code: string,
-    nodes: (
-        | Statement
-        | CommentBlock
-        | CommentLine
-        | ImportDeclaration
-        | InterpreterDirective
-        | Directive
-    )[],
+  code: string,
+  nodes: (
+    | Statement
+    | CommentBlock
+    | CommentLine
+    | ImportDeclaration
+    | InterpreterDirective
+    | Directive
+  )[]
 ): string => {
-    // A list of ranges we should remove from the code
-    // Each range [start, end] consists of a start position in the code
-    // (inclusive) and an end position in the code (exclusive)
-    const excludes = nodes
-        .map((node) => [node.start, node.end] as const)
-        .filter(hasRange)
-        .sort(compareRangesByStart);
+  // A list of ranges we should remove from the code
+  // Each range [start, end] consists of a start position in the code
+  // (inclusive) and an end position in the code (exclusive)
+  const excludes = nodes
+    .map((node) => [node.start, node.end] as const)
+    .filter(hasRange)
+    .sort(compareRangesByStart)
 
-    // In case there are overlapping ranges, merge all overlapping ranges into
-    // a single range.
-    const mergedExcludes = mergeRanges(excludes);
+  // In case there are overlapping ranges, merge all overlapping ranges into
+  // a single range.
+  const mergedExcludes = mergeRanges(excludes)
 
-    // Find the code ranges we want to keep by inverting the excludes with
-    // respect to the entire range [0, code.length]
-    const includes = invertRanges(mergedExcludes, code.length);
+  // Find the code ranges we want to keep by inverting the excludes with
+  // respect to the entire range [0, code.length]
+  const includes = invertRanges(mergedExcludes, code.length)
 
-    // Extract all code parts we want to keep and join them together again
-    return includes
-        .map((include) => code.substring(include[0], include[1]))
-        .join('');
-};
+  // Extract all code parts we want to keep and join them together again
+  return includes
+    .map((include) => code.substring(include[0], include[1]))
+    .join("")
+}

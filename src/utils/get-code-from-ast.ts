@@ -1,9 +1,9 @@
-import generate from '@babel/generator';
-import { Directive, InterpreterDirective, Statement, file } from '@babel/types';
+import generate from "@babel/generator"
+import { Directive, InterpreterDirective, Statement, file } from "@babel/types"
 
-import { newLineCharacters } from '../constants';
-import { getAllCommentsFromNodes } from './get-all-comments-from-nodes';
-import { removeNodesFromOriginalCode } from './remove-nodes-from-original-code';
+import { newLineCharacters } from "../constants"
+import { getAllCommentsFromNodes } from "./get-all-comments-from-nodes"
+import { removeNodesFromOriginalCode } from "./remove-nodes-from-original-code"
 
 /**
  * This function generates a code string from the passed nodes.
@@ -16,59 +16,59 @@ import { removeNodesFromOriginalCode } from './remove-nodes-from-original-code';
  * `#!/bin/node`).
  */
 export const getCodeFromAst = ({
-    nodesToOutput,
-    allOriginalImportNodes = nodesToOutput,
-    originalCode,
-    directives,
-    interpreter,
+  nodesToOutput,
+  allOriginalImportNodes = nodesToOutput,
+  originalCode,
+  directives,
+  interpreter
 }: {
-    nodesToOutput: Statement[];
-    allOriginalImportNodes?: Statement[];
-    originalCode: string;
-    directives: Directive[];
-    interpreter?: InterpreterDirective | null;
+  nodesToOutput: Statement[]
+  allOriginalImportNodes?: Statement[]
+  originalCode: string
+  directives: Directive[]
+  interpreter?: InterpreterDirective | null
 }) => {
-    const allCommentsFromImports = getAllCommentsFromNodes(nodesToOutput);
-    const allCommentsFromDirectives = getAllCommentsFromNodes(directives);
+  const allCommentsFromImports = getAllCommentsFromNodes(nodesToOutput)
+  const allCommentsFromDirectives = getAllCommentsFromNodes(directives)
 
-    const nodesToRemoveFromCode = [
-        ...nodesToOutput,
-        ...allOriginalImportNodes,
-        ...allCommentsFromImports,
-        ...allCommentsFromDirectives,
-        ...(interpreter ? [interpreter] : []),
-        ...directives,
-    ];
+  const nodesToRemoveFromCode = [
+    ...nodesToOutput,
+    ...allOriginalImportNodes,
+    ...allCommentsFromImports,
+    ...allCommentsFromDirectives,
+    ...(interpreter ? [interpreter] : []),
+    ...directives
+  ]
 
-    const codeWithoutImportsAndInterpreter = removeNodesFromOriginalCode(
-        originalCode,
-        nodesToRemoveFromCode,
-    );
+  const codeWithoutImportsAndInterpreter = removeNodesFromOriginalCode(
+    originalCode,
+    nodesToRemoveFromCode
+  )
 
-    const newAST = file({
-        type: 'Program',
-        body: nodesToOutput,
-        directives: directives,
-        sourceType: 'module',
-        interpreter: interpreter,
-        sourceFile: '',
-        leadingComments: [],
-        innerComments: [],
-        trailingComments: [],
-        start: 0,
-        end: 0,
-        loc: {
-            start: { line: 0, column: 0 },
-            end: { line: 0, column: 0 },
-        },
-    });
+  const newAST = file({
+    type: "Program",
+    body: nodesToOutput,
+    directives: directives,
+    sourceType: "module",
+    interpreter: interpreter,
+    sourceFile: "",
+    leadingComments: [],
+    innerComments: [],
+    trailingComments: [],
+    start: 0,
+    end: 0,
+    loc: {
+      start: { line: 0, column: 0 },
+      end: { line: 0, column: 0 }
+    }
+  })
 
-    const { code } = generate(newAST);
+  const { code } = generate(newAST)
 
-    return (
-        code.replace(
-            /"PRETTIER_PLUGIN_SORT_IMPORTS_NEW_LINE";/gi,
-            newLineCharacters,
-        ) + codeWithoutImportsAndInterpreter.trim()
-    );
-};
+  return (
+    code.replace(
+      /"PRETTIER_PLUGIN_SORT_IMPORTS_NEW_LINE";/gi,
+      newLineCharacters
+    ) + codeWithoutImportsAndInterpreter.trim()
+  )
+}

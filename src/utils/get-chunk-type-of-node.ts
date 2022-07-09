@@ -1,6 +1,6 @@
-import { chunkTypeOther, chunkTypeUnsortable } from '../constants';
-import { GetChunkTypeOfNode } from '../types';
-import { hasIgnoreNextNode } from './has-ignore-next-node';
+import { chunkTypeOther, chunkTypeUnsortable } from "../constants"
+import { GetChunkTypeOfNode } from "../types"
+import { hasIgnoreNextNode } from "./has-ignore-next-node"
 
 /**
  * Classifies an import declarations according to its properties, the
@@ -21,8 +21,8 @@ import { hasIgnoreNextNode } from './has-ignore-next-node';
  * @returns The type of the chunk into which the node should be put.
  */
 export const getChunkTypeOfNode: GetChunkTypeOfNode = (node) => {
-    const hasNoImportedSymbols = node.specifiers.length === 0;
-    return hasIgnoreNextNode(node.leadingComments) || hasNoImportedSymbols
-        ? chunkTypeUnsortable
-        : chunkTypeOther;
-};
+  const hasNoImportedSymbols = node.specifiers.length === 0
+  return hasIgnoreNextNode(node.leadingComments) || hasNoImportedSymbols
+    ? chunkTypeUnsortable
+    : chunkTypeOther
+}

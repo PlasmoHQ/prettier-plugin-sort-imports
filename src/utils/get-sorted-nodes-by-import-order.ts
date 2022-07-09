@@ -1,15 +1,15 @@
-import { clone } from 'lodash';
+import clone from "lodash.clone"
 
 import {
-    BUILTIN_MODULES,
-    THIRD_PARTY_MODULES_SPECIAL_WORD,
-    newLineNode,
-} from '../constants';
-import { naturalSort } from '../natural-sort';
-import { GetSortedNodes, ImportGroups, ImportOrLine } from '../types';
-import { getImportNodesMatchedGroup } from './get-import-nodes-matched-group';
-import { getSortedImportSpecifiers } from './get-sorted-import-specifiers';
-import { getSortedNodesGroup } from './get-sorted-nodes-group';
+  BUILTIN_MODULES,
+  THIRD_PARTY_MODULES_SPECIAL_WORD,
+  newLineNode
+} from "../constants"
+import { naturalSort } from "../natural-sort"
+import { GetSortedNodes, ImportGroups, ImportOrLine } from "../types"
+import { getImportNodesMatchedGroup } from "./get-import-nodes-matched-group"
+import { getSortedImportSpecifiers } from "./get-sorted-import-specifiers"
+import { getSortedNodesGroup } from "./get-sorted-nodes-group"
 
 /**
  * This function returns the given nodes, sorted in the order as indicated by
@@ -19,103 +19,98 @@ import { getSortedNodesGroup } from './get-sorted-nodes-group';
  * @param options Options to influence the behavior of the sorting algorithm.
  */
 export const getSortedNodesByImportOrder: GetSortedNodes = (nodes, options) => {
-    naturalSort.insensitive = options.importOrderCaseInsensitive;
+  naturalSort.insensitive = options.importOrderCaseInsensitive
 
-    let { importOrder } = options;
-    const {
-        importOrderSeparation,
-        importOrderSortSpecifiers,
-        importOrderGroupNamespaceSpecifiers,
-        importOrderBuiltinModulesToTop,
-    } = options;
+  let { importOrder } = options
+  const {
+    importOrderSeparation,
+    importOrderSortSpecifiers,
+    importOrderGroupNamespaceSpecifiers,
+    importOrderBuiltinModulesToTop
+  } = options
 
-    const originalNodes = nodes.map(clone);
-    const finalNodes: ImportOrLine[] = [];
+  const originalNodes = nodes.map(clone)
+  const finalNodes: ImportOrLine[] = []
 
-    if (!importOrder.includes(THIRD_PARTY_MODULES_SPECIAL_WORD)) {
-        importOrder = [THIRD_PARTY_MODULES_SPECIAL_WORD, ...importOrder];
+  if (!importOrder.includes(THIRD_PARTY_MODULES_SPECIAL_WORD)) {
+    importOrder = [THIRD_PARTY_MODULES_SPECIAL_WORD, ...importOrder]
+  }
+
+  if (importOrderBuiltinModulesToTop) {
+    importOrder = [BUILTIN_MODULES, ...importOrder]
+  }
+
+  const importOrderGroups = importOrder.reduce<ImportGroups>(
+    (groups, regexp) =>
+      // Don't create a new group for explicit import separators
+      isCustomGroupSeparator(regexp)
+        ? groups
+        : {
+            ...groups,
+            [regexp]: []
+          },
+    {}
+  )
+
+  const sanitizedImportOrder = importOrder.filter(
+    (group) =>
+      !isCustomGroupSeparator(group) &&
+      group !== THIRD_PARTY_MODULES_SPECIAL_WORD
+  )
+
+  // Assign import nodes into import order groups
+  for (const node of originalNodes) {
+    const matchedGroup = getImportNodesMatchedGroup(node, sanitizedImportOrder)
+    importOrderGroups[matchedGroup].push(node)
+  }
+
+  for (const group of importOrder) {
+    // If it's a custom separator, all we need to do is add a newline
+    if (isCustomGroupSeparator(group)) {
+      const lastNode = finalNodes[finalNodes.length - 1]
+      // Avoid empty new line if first group is empty
+      if (!lastNode) {
+        continue
+      }
+      // Don't add multiple newlines
+      if (isNodeANewline(lastNode)) {
+        continue
+      }
+      finalNodes.push(newLineNode)
+      continue
     }
 
-    if (importOrderBuiltinModulesToTop) {
-        importOrder = [BUILTIN_MODULES, ...importOrder];
+    const groupNodes = importOrderGroups[group]
+
+    if (groupNodes.length === 0) continue
+
+    const sortedInsideGroup = getSortedNodesGroup(groupNodes, {
+      importOrderGroupNamespaceSpecifiers
+    })
+
+    // Sort the import specifiers
+    if (importOrderSortSpecifiers) {
+      sortedInsideGroup.forEach((node) => getSortedImportSpecifiers(node))
     }
 
-    const importOrderGroups = importOrder.reduce<ImportGroups>(
-        (groups, regexp) =>
-            // Don't create a new group for explicit import separators
-            isCustomGroupSeparator(regexp)
-                ? groups
-                : {
-                      ...groups,
-                      [regexp]: [],
-                  },
-        {},
-    );
+    finalNodes.push(...sortedInsideGroup)
 
-    const sanitizedImportOrder = importOrder.filter(
-        (group) =>
-            !isCustomGroupSeparator(group) &&
-            group !== THIRD_PARTY_MODULES_SPECIAL_WORD,
-    );
-
-    // Assign import nodes into import order groups
-    for (const node of originalNodes) {
-        const matchedGroup = getImportNodesMatchedGroup(
-            node,
-            sanitizedImportOrder,
-        );
-        importOrderGroups[matchedGroup].push(node);
+    if (importOrderSeparation) {
+      finalNodes.push(newLineNode)
     }
+  }
 
-    for (const group of importOrder) {
-        // If it's a custom separator, all we need to do is add a newline
-        if (isCustomGroupSeparator(group)) {
-            const lastNode = finalNodes[finalNodes.length - 1];
-            // Avoid empty new line if first group is empty
-            if (!lastNode) {
-                continue;
-            }
-            // Don't add multiple newlines
-            if (isNodeANewline(lastNode)) {
-                continue;
-            }
-            finalNodes.push(newLineNode);
-            continue;
-        }
-
-        const groupNodes = importOrderGroups[group];
-
-        if (groupNodes.length === 0) continue;
-
-        const sortedInsideGroup = getSortedNodesGroup(groupNodes, {
-            importOrderGroupNamespaceSpecifiers,
-        });
-
-        // Sort the import specifiers
-        if (importOrderSortSpecifiers) {
-            sortedInsideGroup.forEach((node) =>
-                getSortedImportSpecifiers(node),
-            );
-        }
-
-        finalNodes.push(...sortedInsideGroup);
-
-        if (importOrderSeparation) {
-            finalNodes.push(newLineNode);
-        }
-    }
-
-    return finalNodes;
-};
+  return finalNodes
+}
 
 /**
  * isCustomGroupSeparator checks if the provided pattern is intended to be used
  * as an import separator, rather than an actual group of imports.
  */
 function isCustomGroupSeparator(pattern: string) {
-    return pattern.trim() === '';
+  return pattern.trim() === ""
 }
 
 function isNodeANewline(node: ImportOrLine) {
-    return node.type === 'ExpressionStatement';
+  return node.type === "ExpressionStatement"
 }

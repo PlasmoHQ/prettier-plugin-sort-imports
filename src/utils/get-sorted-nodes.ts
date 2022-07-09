@@ -1,9 +1,9 @@
-import { chunkTypeUnsortable, newLineNode } from '../constants';
-import { GetSortedNodes, ImportChunk, ImportOrLine } from '../types';
-import { adjustCommentsOnSortedNodes } from './adjust-comments-on-sorted-nodes';
-import { getChunkTypeOfNode } from './get-chunk-type-of-node';
-import { getSortedNodesByImportOrder } from './get-sorted-nodes-by-import-order';
-import { mergeNodesWithMatchingImportFlavors } from './merge-nodes-with-matching-flavors';
+import { chunkTypeUnsortable, newLineNode } from "../constants"
+import { GetSortedNodes, ImportChunk, ImportOrLine } from "../types"
+import { adjustCommentsOnSortedNodes } from "./adjust-comments-on-sorted-nodes"
+import { getChunkTypeOfNode } from "./get-chunk-type-of-node"
+import { getSortedNodesByImportOrder } from "./get-sorted-nodes-by-import-order"
+import { mergeNodesWithMatchingImportFlavors } from "./merge-nodes-with-matching-flavors"
 
 /**
  * This function returns the given nodes, sorted in the order as indicated by
@@ -21,49 +21,46 @@ import { mergeNodesWithMatchingImportFlavors } from './merge-nodes-with-matching
  * @returns A sorted array of the remaining import nodes
  */
 export const getSortedNodes: GetSortedNodes = (nodes, options) => {
-    const { importOrderSeparation, importOrderMergeDuplicateImports } = options;
+  const { importOrderSeparation, importOrderMergeDuplicateImports } = options
 
-    // Split nodes at each boundary between a side-effect node and a
-    // non-side-effect node, keeping both types of nodes together.
-    const splitBySideEffectNodes = nodes.reduce<ImportChunk[]>(
-        (chunks, node) => {
-            const type = getChunkTypeOfNode(node);
-            const last = chunks[chunks.length - 1];
-            if (last === undefined || last.type !== type) {
-                chunks.push({ type, nodes: [node] });
-            } else {
-                last.nodes.push(node);
-            }
-            return chunks;
-        },
-        [],
-    );
-
-    const finalNodes: ImportOrLine[] = [];
-
-    // Sort each chunk of side-effect and non-side-effect nodes, and insert new
-    // lines according the importOrderSeparation option.
-    for (const chunk of splitBySideEffectNodes) {
-        if (chunk.type === chunkTypeUnsortable) {
-            // do not sort side effect nodes
-            finalNodes.push(...chunk.nodes);
-        } else {
-            const nodes = importOrderMergeDuplicateImports
-                ? mergeNodesWithMatchingImportFlavors(chunk.nodes)
-                : chunk.nodes;
-            // sort non-side effect nodes
-            const sorted = getSortedNodesByImportOrder(nodes, options);
-            finalNodes.push(...sorted);
-        }
-        if (importOrderSeparation) {
-            finalNodes.push(newLineNode);
-        }
+  // Split nodes at each boundary between a side-effect node and a
+  // non-side-effect node, keeping both types of nodes together.
+  const splitBySideEffectNodes = nodes.reduce<ImportChunk[]>((chunks, node) => {
+    const type = getChunkTypeOfNode(node)
+    const last = chunks[chunks.length - 1]
+    if (last === undefined || last.type !== type) {
+      chunks.push({ type, nodes: [node] })
+    } else {
+      last.nodes.push(node)
     }
+    return chunks
+  }, [])
 
-    if (finalNodes.length > 0 && !importOrderSeparation) {
-        finalNodes.push(newLineNode);
+  const finalNodes: ImportOrLine[] = []
+
+  // Sort each chunk of side-effect and non-side-effect nodes, and insert new
+  // lines according the importOrderSeparation option.
+  for (const chunk of splitBySideEffectNodes) {
+    if (chunk.type === chunkTypeUnsortable) {
+      // do not sort side effect nodes
+      finalNodes.push(...chunk.nodes)
+    } else {
+      const nodes = importOrderMergeDuplicateImports
+        ? mergeNodesWithMatchingImportFlavors(chunk.nodes)
+        : chunk.nodes
+      // sort non-side effect nodes
+      const sorted = getSortedNodesByImportOrder(nodes, options)
+      finalNodes.push(...sorted)
     }
+    if (importOrderSeparation) {
+      finalNodes.push(newLineNode)
+    }
+  }
 
-    // Adjust the comments on the sorted nodes to match the original comments
-    return adjustCommentsOnSortedNodes(nodes, finalNodes);
-};
+  if (finalNodes.length > 0 && !importOrderSeparation) {
+    finalNodes.push(newLineNode)
+  }
+
+  // Adjust the comments on the sorted nodes to match the original comments
+  return adjustCommentsOnSortedNodes(nodes, finalNodes)
+}
