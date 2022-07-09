@@ -2,13 +2,7 @@
 
 A prettier plugin to sort import declarations by provided Regular Expression order.
 
-This was forked from [@trivago/prettier-plugin-sort-imports](https://github.com/trivago/prettier-plugin-sort-imports).
-
-The first change was preserving the order of [side-effect imports](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/import#import_a_module_for_its_side_effects_only) to avoid breaking situations where import-order has correctness implications (such as styles).
-
-Since then more critical features & fixes have been added. As a result, this repo intends to stay compatible with the upstream, but may continue to gain features not present in the original version of the plugin.
-
-[We welcome contributions!](./CONTRIBUTING.md)
+This was forked from [IanVS/prettier-plugin-sort-imports](https://github.com/IanVS/prettier-plugin-sort-imports), which was a fork of [@trivago/prettier-plugin-sort-imports](https://github.com/trivago/prettier-plugin-sort-imports).
 
 ## Sample
 
@@ -17,25 +11,20 @@ Since then more critical features & fixes have been added. As a result, this rep
 ```javascript
 // prettier-ignore
 import { environment } from "./misguided-module-with-side-effects.js";
+import "core-js/stable"
+import "regenerator-runtime/runtime"
 
-import "core-js/stable";
-import "regenerator-runtime/runtime";
-import React, {
-    FC,
-    useEffect,
-    useRef,
-    ChangeEvent,
-    KeyboardEvent,
-} from 'react';
-import { logger } from '@core/logger';
-import { reduce, debounce } from 'lodash';
-import { Message } from '../Message';
-import { createServer } from '@server/node';
-import { Alert } from '@ui/Alert';
-import { repeat, filter, add } from '../utils';
-import { initializeApp } from '@core/app';
-import { Popup } from '@ui/Popup';
-import { createConnection } from '@server/database';
+import { initializeApp } from "@core/app"
+import { logger } from "@core/logger"
+import { createConnection } from "@server/database"
+import { createServer } from "@server/node"
+import { Alert } from "@ui/Alert"
+import { Popup } from "@ui/Popup"
+import { debounce, reduce } from "lodash"
+import React, { ChangeEvent, FC, KeyboardEvent, useEffect, useRef } from "react"
+
+import { Message } from "../Message"
+import { add, filter, repeat } from "../utils"
 ```
 
 ### Output
@@ -43,65 +32,53 @@ import { createConnection } from '@server/database';
 ```javascript
 // prettier-ignore
 import { environment } from "./misguided-module-with-side-effects.js";
+import "core-js/stable"
+import "regenerator-runtime/runtime"
 
-import "core-js/stable";
-import "regenerator-runtime/runtime";
-import { debounce, reduce } from 'lodash';
-import React, {
-    ChangeEvent,
-    FC,
-    KeyboardEvent,
-    useEffect,
-    useRef,
-} from 'react';
+import { initializeApp } from "@core/app"
+import { logger } from "@core/logger"
+import { createConnection } from "@server/database"
+import { createServer } from "@server/node"
+import { Alert } from "@ui/Alert"
+import { Popup } from "@ui/Popup"
+import { debounce, reduce } from "lodash"
+import React, { ChangeEvent, FC, KeyboardEvent, useEffect, useRef } from "react"
 
-import { createConnection } from '@server/database';
-import { createServer } from '@server/node';
-
-import { initializeApp } from '@core/app';
-import { logger } from '@core/logger';
-
-import { Alert } from '@ui/Alert';
-import { Popup } from '@ui/Popup';
-
-import { Message } from '../Message';
-import { add, filter, repeat } from '../utils';
+import { Message } from "../Message"
+import { add, filter, repeat } from "../utils"
 ```
 
 ## Install
 
-npm
-
-```shell script
-npm install --save-dev @ianvs/prettier-plugin-sort-imports
+```shell
+pnpm install --save-dev @plasmohq/prettier-plugin-sort-imports
 ```
-
-or, using yarn
-
-```shell script
-yarn add --dev @ianvs/prettier-plugin-sort-imports
-```
-
-**Note: If you are migrating from v2.x.x to v3.x.x, [Please Read Migration Guidelines](./docs/MIGRATION.md)**
 
 ## Usage
 
 Add your preferred settings in your prettier config file.
 
-```javascript
+```ts
+/**
+ * @type {import('prettier').Options}
+ */
 module.exports = {
-  "printWidth": 80,
-  "tabWidth": 4,
-  "trailingComma": "all",
-  "singleQuote": true,
-  "semi": true,
-  "importOrder": ["^@core/(.*)$", "^@server/(.*)$", "^@ui/(.*)$", "^[./]"],
-  "importOrderBuiltinModulesToTop": true,
-  "importOrderCaseInsensitive": true,
-  "importOrderParserPlugins": ["typescript", "jsx", "decorators-legacy"],
-  "importOrderMergeDuplicateImports": true,
-  "importOrderSeparation": true,
-  "importOrderSortSpecifiers": true,
+  printWidth: 80,
+  tabWidth: 2,
+  useTabs: false,
+  semi: false,
+  singleQuote: false,
+  trailingComma: "none",
+  bracketSpacing: true,
+  bracketSameLine: true,
+  plugins: [require("./dist/index.js")],
+  importOrder: ["^@plasmo/(.*)$", "^@plasmohq/(.*)$", "^~(.*)$", "^[./]"],
+  importOrderSeparation: true,
+  importOrderSortSpecifiers: true,
+  importOrderBuiltinModulesToTop: true,
+  importOrderCaseInsensitive: true,
+  importOrderParserPlugins: ["typescript", "jsx", "decorators-legacy"],
+  importOrderMergeDuplicateImports: true
 }
 ```
 
@@ -118,7 +95,8 @@ prevent an import from getting sorted like this:
 ```javascript
 // prettier-ignore
 import { goods } from "zealand";
-import { cars } from "austria";
+
+import { cars } from "austria"
 ```
 
 This will keep the `zealand` import at the top instead of moving it below the `austria` import. Note that since only
@@ -199,15 +177,15 @@ used to order imports within each match group.
 For example, when false (or not specified):
 
 ```javascript
-import ExampleView from './ExampleView';
-import ExamplesList from './ExamplesList';
+import ExampleView from "./ExampleView"
+import ExamplesList from "./ExamplesList"
 ```
 
 compared with `"importOrderCaseInsensitive": true`:
 
 ```javascript
-import ExamplesList from './ExamplesList';
-import ExampleView from './ExampleView';
+import ExampleView from "./ExampleView"
+import ExamplesList from "./ExamplesList"
 ```
 
 #### `importOrderMergeDuplicateImports`
@@ -271,24 +249,28 @@ classified as unsortable. They also behave as a barrier that other imports may n
 example, let's say you've got these imports:
 
 ```javascript
-import E from 'e';
-import F from 'f';
-import D from 'd';
-import 'c';
-import B from 'b';
-import A from 'a';
+import D from "d"
+import E from "e"
+import F from "f"
+
+import "c"
+
+import A from "a"
+import B from "b"
 ```
 
 Then the first three imports are sorted and the last two imports are sorted, but all imports above `c` stay above `c`
 and all imports below `c` stay below `c`, resulting in:
 
 ```javascript
-import D from 'd';
-import E from 'e';
-import F from 'f';
-import 'c';
-import A from 'a';
-import B from 'b';
+import D from "d"
+import E from "e"
+import F from "f"
+
+import "c"
+
+import A from "a"
+import B from "b"
 ```
 
 Additionally, any import statements lines that are preceded by a `// prettier-ignore` comment are also classified as
