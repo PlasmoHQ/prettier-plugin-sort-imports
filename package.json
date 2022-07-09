@@ -8,6 +8,7 @@
     "url": "https://github.com/PlasmoHQ/prettier-plugin-sort-imports",
     "type": "git"
   },
+  "author": "Plasmo Corp. <support@plasmo.com>",
   "homepage": "https://github.com/PlasmoHQ/prettier-plugin-sort-imports#readme",
   "scripts": {
     "build": "tsup src/index.ts --minify --clean",
@@ -20,26 +21,6 @@
     "import",
     "typescript",
     "javascript"
-  ],
-  "contributors": [
-    {
-      "name": "Louis",
-      "url": "https://github.com/louisgv"
-    },
-    {
-      "name": "Ayush Sharma",
-      "email": "ayush.sharma@trivago.com",
-      "url": "https://github.com/ayusharma"
-    },
-    {
-      "name": "Behrang Yarahmadi",
-      "url": "https://github.com/byara"
-    },
-    {
-      "name": "Andre Wachsmuth",
-      "email": "sensenmann5@gmail.com",
-      "url": "https://github.com/blutorange"
-    }
   ],
   "license": "Apache-2.0",
   "dependencies": {
