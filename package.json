@@ -1,7 +1,7 @@
 {
   "name": "@plasmohq/prettier-plugin-sort-imports",
   "private": false,
-  "version": "1.2.1",
+  "version": "1.2.2",
   "description": "A prettier plugins to sort imports in provided RegEx order",
   "main": "dist/index.js",
   "files": [
