@@ -1,7 +1,7 @@
 {
   "name": "@plasmohq/prettier-plugin-sort-imports",
   "private": false,
-  "version": "3.6.0",
+  "version": "3.6.1",
   "description": "A prettier plugins to sort imports in provided RegEx order",
   "main": "dist/index.js",
   "files": [
@@ -27,11 +27,11 @@
   ],
   "license": "Apache-2.0",
   "dependencies": {
-    "@babel/core": "7.20.2",
-    "@babel/generator": "7.20.4",
-    "@babel/parser": "7.20.3",
-    "@babel/traverse": "7.20.1",
-    "@babel/types": "7.20.2",
+    "@babel/core": "7.20.5",
+    "@babel/generator": "7.20.5",
+    "@babel/parser": "7.20.5",
+    "@babel/traverse": "7.20.5",
+    "@babel/types": "7.20.5",
     "javascript-natural-sort": "0.7.1",
     "lodash.clone": "4.5.0",
     "lodash.isequal": "4.5.0"
@@ -39,10 +39,10 @@
   "devDependencies": {
     "@types/lodash.clone": "4.5.7",
     "@types/lodash.isequal": "4.5.6",
-    "@types/node": "18.11.9",
-    "prettier": "2.8.0",
+    "@types/node": "18.11.15",
+    "prettier": "2.8.1",
     "tsup": "6.5.0",
-    "typescript": "4.9.3"
+    "typescript": "4.9.4"
   },
   "peerDependencies": {
     "prettier": "2.x"
