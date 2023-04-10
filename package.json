@@ -42,7 +42,7 @@
     "@types/node": "18.15.11",
     "prettier": "2.8.7",
     "tsup": "6.7.0",
-    "typescript": "5.0.3"
+    "typescript": "5.0.4"
   },
   "peerDependencies": {
     "prettier": "2.x"
