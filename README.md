@@ -11,6 +11,7 @@ This was forked from [IanVS/prettier-plugin-sort-imports](https://github.com/Ian
 ```javascript
 // prettier-ignore
 import { environment } from "./misguided-module-with-side-effects.js";
+
 import "core-js/stable"
 import "regenerator-runtime/runtime"
 
@@ -32,6 +33,7 @@ import { add, filter, repeat } from "../utils"
 ```javascript
 // prettier-ignore
 import { environment } from "./misguided-module-with-side-effects.js";
+
 import "core-js/stable"
 import "regenerator-runtime/runtime"
 
@@ -94,9 +96,9 @@ prevent an import from getting sorted like this:
 
 ```javascript
 // prettier-ignore
-import { goods } from "zealand";
 
-import { cars } from "austria"
+import { cars } from "austria";
+import { goods } from "zealand"
 ```
 
 This will keep the `zealand` import at the top instead of moving it below the `austria` import. Note that since only
