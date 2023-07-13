@@ -1,23 +1,24 @@
-import type { RequiredOptions as PrettierRequiredOptions } from "prettier"
-import { parsers as babelParsers } from "prettier/parser-babel"
-import { parsers as flowParsers } from "prettier/parser-flow"
-import { parsers as typescriptParsers } from "prettier/parser-typescript"
+import type {
+  Plugin,
+  ParserOptions,
+  PathSupportOption,
+  BooleanSupportOption,
+  StringArraySupportOption,
+  PathArraySupportOption
+} from "prettier"
+import { parsers as babelParsers } from "prettier/plugins/babel"
+import { parsers as flowParsers } from "prettier/plugins/flow"
+import { parsers as typescriptParsers } from "prettier/plugins/typescript"
 
-import { preprocessor } from "./preprocessor"
 import type { PrettierOptions } from "./types"
-
-// Not sure what the type from Prettier should be, but this is a good enough start.
-interface PrettierOptionSchema {
-  type: string
-  category: "Global"
-  array?: boolean
-  default: unknown
-  description: string
-}
+import { preprocess } from "./preprocess"
 
 const options: Record<
-  Exclude<keyof PrettierOptions, keyof PrettierRequiredOptions>,
-  PrettierOptionSchema
+  Exclude<keyof PrettierOptions, keyof ParserOptions>,
+  | PathSupportOption
+  | BooleanSupportOption
+  | StringArraySupportOption
+  | PathArraySupportOption
 > = {
   importOrder: {
     type: "path",
@@ -74,20 +75,20 @@ const options: Record<
   }
 }
 
-module.exports = {
+export default {
   parsers: {
     babel: {
       ...babelParsers.babel,
-      preprocess: preprocessor
+      preprocess
     },
     flow: {
       ...flowParsers.flow,
-      preprocess: preprocessor
+      preprocess
     },
     typescript: {
       ...typescriptParsers.typescript,
-      preprocess: preprocessor
+      preprocess
     }
   },
   options
-}
+} as Plugin

@@ -7,7 +7,7 @@ import { getCodeFromAst } from "./utils/get-code-from-ast"
 import { getExperimentalParserPlugins } from "./utils/get-experimental-parser-plugins"
 import { getSortedNodes } from "./utils/get-sorted-nodes"
 
-export function preprocessor(code: string, options: PrettierOptions): string {
+export function preprocess(code: string, options: PrettierOptions): string {
   const {
     importOrderParserPlugins,
     importOrder,

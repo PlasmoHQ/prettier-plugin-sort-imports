@@ -1,5 +1,5 @@
 import { ExpressionStatement, ImportDeclaration } from "@babel/types"
-import { RequiredOptions } from "prettier"
+import { ParserOptions, RequiredOptions } from "prettier"
 
 import {
   chunkTypeOther,
@@ -10,7 +10,7 @@ import {
   importFlavorValue
 } from "./constants"
 
-export interface PrettierOptions extends RequiredOptions {
+export interface PrettierOptions extends ParserOptions {
   importOrder: string[]
   importOrderCaseInsensitive: boolean
   importOrderBuiltinModulesToTop: boolean
