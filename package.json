@@ -45,6 +45,6 @@
     "typescript": "5.1.6"
   },
   "peerDependencies": {
-    "prettier": "2.x | 3.x"
+    "prettier": "3.x"
   }
 }
